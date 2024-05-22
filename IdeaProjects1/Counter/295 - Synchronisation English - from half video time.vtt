@@ -1,0 +1,584 @@
+WEBVTT
+
+00:00:05.360 --> 00:00:09.660
+So let's now go through an example to demonstrate a race condition.
+
+00:00:10.020 --> 00:00:13.020
+Now we could easily have both threads count down to one
+
+00:00:13.020 --> 00:00:18.010
+without skipping numbers by not passing the same countdown object to both threads.
+
+00:00:18.010 --> 00:00:21.810
+So instead, what we're going to do is create two countdown objects
+
+00:00:21.810 --> 00:00:25.360
+and pass one to thread one and the other to thread two
+
+00:00:25.360 --> 00:00:29.050
+because, of course, at the moment, as you can see in lines eight and ten,
+
+00:00:29.050 --> 00:00:31.550
+we're passing the same object.
+
+00:00:32.050 --> 00:00:33.740
+So by doing it this way by
+
+00:00:33.740 --> 00:00:35.740
+creating an object for each
+
+00:00:35.740 --> 00:00:38.240
+and passing a different one to each of our threads,
+
+00:00:38.240 --> 00:00:42.000
+both objects are stored in the heap and are shared,
+
+00:00:42.000 --> 00:00:45.400
+but since thread 1 would only work on countdown object 1
+
+00:00:45.400 --> 00:00:47.900
+and thread 2 on countdown object 2,
+
+00:00:47.900 --> 00:00:49.900
+there wouldn't be any interference.
+
+00:00:49.900 --> 00:00:52.400
+So let's change the code just to demonstrate that now.
+
+00:00:52.400 --> 00:00:55.700
+So we're going to change that, we're going to use countdown 1 here.
+
+00:00:56.300 --> 00:00:59.900
+And let's also create a second one, countdown two,
+
+00:01:01.400 --> 00:01:04.700
+and then we're going to pass countdown one to thread one
+
+00:01:05.200 --> 00:01:09.900
+and count down two to thread two. So let's run that and see what happens.
+
+00:01:12.260 --> 00:01:14.260
+You'll run it a few times just to confirm.
+
+00:01:14.950 --> 00:01:17.950
+What you should be seeing here is that there's no interference.
+
+00:01:18.640 --> 00:01:22.790
+We're still getting objects running or the results rather printed out in a different order,
+
+00:01:22.790 --> 00:01:27.480
+and that's because the operating system is suspending the threads and starting them again,
+
+00:01:27.480 --> 00:01:30.840
+but what you can see here is now there's no interference.So we have got
+
+00:01:30.840 --> 00:01:34.840
+each number as each thread, rather it’s successfully counting down
+
+00:01:34.840 --> 00:01:35.840
+from ten to one,
+
+00:01:36.530 --> 00:01:40.730
+but unfortunately, this solution often won't work in real-world applications.
+
+00:01:41.230 --> 00:01:44.590
+So as an example, imagine if the objects represented here
+
+00:01:44.590 --> 00:01:47.580
+were bank accounts or employee records,
+
+00:01:47.580 --> 00:01:51.680
+we can't provide each thread with a different object.It wouldn't make sense to do that,
+
+00:01:51.680 --> 00:01:56.180
+so every time a bank manager or employee file is accessed and changed,
+
+00:01:56.180 --> 00:02:00.330
+we have to use the same object to maintain the integrity of the data.
+
+00:02:00.330 --> 00:02:03.530
+Otherwise, how do we know what the bank balance should be
+
+00:02:03.530 --> 00:02:05.530
+after several threads have changed it?
+
+00:02:05.780 --> 00:02:07.440
+So in the case of bank accounts,
+
+00:02:07.440 --> 00:02:11.740
+there could be several threads waiting to change the bank balance at the same time.
+
+00:02:12.240 --> 00:02:14.940
+There could be a thread making an automated deposit,
+
+00:02:14.940 --> 00:02:17.940
+perhaps a thread making a scheduled bill payment,
+
+00:02:17.940 --> 00:02:20.440
+and the owner of the account doing some online banking.
+
+00:02:20.800 --> 00:02:24.800
+So in order to ensure the integrity of the bank balance value,
+
+00:02:24.800 --> 00:02:27.600
+we need to allow multiple threads to change it,
+
+00:02:27.900 --> 00:02:30.890
+but we also need to prevent a race condition,
+
+00:02:30.890 --> 00:02:34.490
+which is thread interference which we talked about and went through in the previous video.
+
+00:02:35.180 --> 00:02:36.680
+Now, fortunately,
+
+00:02:36.680 --> 00:02:41.180
+java provides us with a way to control when a thread can change a value in the heap,
+
+00:02:41.580 --> 00:02:43.580
+the process of controlling
+
+00:02:43.580 --> 00:02:48.380
+when threads execute code and therefore when they can access the heap
+
+00:02:48.380 --> 00:02:50.380
+is called synchronization.
+
+00:02:50.780 --> 00:02:53.580
+So, we can synchronize methods and statements.
+
+00:02:53.980 --> 00:02:55.980
+Now when a method is synchronized,
+
+00:02:55.980 --> 00:02:58.780
+only one thread can execute that at a time.
+
+00:02:58.780 --> 00:03:01.280
+So when a thread is executing the method,
+
+00:03:01.280 --> 00:03:04.080
+all other threads that want to call the method
+
+00:03:04.080 --> 00:03:07.330
+or any other synchronized method in that class
+
+00:03:07.330 --> 00:03:11.130
+will suspend until the thread running the method exits it.
+
+00:03:11.490 --> 00:03:15.490
+Then another thread can run a synchronized method then another, etc.
+
+00:03:16.180 --> 00:03:19.840
+To be clear, if a class has three synchronized methods,
+
+00:03:19.840 --> 00:03:22.840
+then only one of these methods can ever run at a time
+
+00:03:22.840 --> 00:03:24.840
+and only on one thread.
+
+00:03:25.340 --> 00:03:27.540
+Now since only one thread can execute a
+
+00:03:27.540 --> 00:03:30.040
+synchronized method at a time,
+
+00:03:30.040 --> 00:03:33.240
+threads can't interleave when running a synchronized method.
+
+00:03:33.930 --> 00:03:37.430
+So what that does is it prevents thread interference
+
+00:03:37.430 --> 00:03:41.430
+within synchronized methods, but not outside of those methods.
+
+00:03:42.030 --> 00:03:46.930
+So, if the same instance variables referenced within a synchronized
+
+00:03:46.930 --> 00:03:50.930
+method are also referenced outside it in code that multiple threads
+
+00:03:50.930 --> 00:03:54.620
+can run and that particular code isn't synchronized,
+
+00:03:54.620 --> 00:03:57.120
+then we may still see thread interference.
+
+00:03:57.720 --> 00:04:01.520
+When working with threads, we have to synchronize all areas
+
+00:04:01.520 --> 00:04:04.820
+where we think or where interference can happen.
+
+00:04:05.370 --> 00:04:09.570
+So let's change our example back now to only using one countdown object, since we've
+
+00:04:09.570 --> 00:04:13.170
+established that a real-world application couldn't do
+
+00:04:13.170 --> 00:04:15.670
+couldn't have separate objects as such, it wouldn't work.
+
+00:04:16.550 --> 00:04:17.910
+I'm just going to undo those changes
+
+00:04:19.410 --> 00:04:23.560
+and just to confirm we'll run it. We should see that the threads are now skipping numbers again.
+
+00:04:24.360 --> 00:04:25.960
+So we are getting that interference again.
+
+00:04:26.560 --> 00:04:28.060
+So to synchronize a method,
+
+00:04:28.060 --> 00:04:32.160
+all we really have to do is add the synchronized keyword to a method declaration.
+
+00:04:32.760 --> 00:04:36.560
+So seeing that the work is being done in the doCountdown method,
+
+00:04:37.160 --> 00:04:41.520
+we just need to change this by adding synchronized like so.
+
+00:04:42.420 --> 00:04:43.420
+Now when we run it,
+
+00:04:45.420 --> 00:04:49.410
+you can see that thread 1 counts down without skipping any numbers,
+
+00:04:49.410 --> 00:04:52.610
+and then thread 2 does the same and notice when I run it again,
+
+00:04:52.610 --> 00:04:55.310
+we're getting the same results every time I run this
+
+00:04:56.000 --> 00:05:00.360
+and that's because this is synchronized by adding the synchronized keyword.
+
+00:05:00.910 --> 00:05:03.810
+We're now saying that we want this whole method to run
+
+00:05:04.310 --> 00:05:08.560
+before another thread gets access to it and that's why you can see thread one finishes in
+
+00:05:08.560 --> 00:05:11.360
+the entire thread, the entire method,
+
+00:05:11.360 --> 00:05:13.860
+and then thread two gets its chance to do the same.
+
+00:05:14.360 --> 00:05:18.560
+So in this scenario, they're never going to interleave because only one of them can execute
+
+00:05:18.560 --> 00:05:21.160
+the doCountdown method at a time.
+
+00:05:21.660 --> 00:05:24.460
+Now, unfortunately, we can't synchronize constructors
+
+00:05:24.460 --> 00:05:27.760
+and if you think about it, it wouldn't really make sense if we could do that.
+
+00:05:28.560 --> 00:05:31.060
+Only one thread can construct an instance
+
+00:05:31.060 --> 00:05:34.060
+and until the constructor has finished executing,
+
+00:05:34.060 --> 00:05:37.060
+the instance won't be available for other threads to use anyway,
+
+00:05:37.460 --> 00:05:40.460
+but what we can do is synchronize any other method.
+
+00:05:40.960 --> 00:05:43.460
+So that's one way to prevent a race condition.
+
+00:05:43.460 --> 00:05:45.150
+The second way we can do that,
+
+00:05:45.350 --> 00:05:48.950
+we can prevent a race condition is to synchronize a block of statements
+
+00:05:48.950 --> 00:05:50.450
+rather than an entire method.
+
+00:05:51.350 --> 00:05:54.230
+So every java object has what's called it's…
+
+00:05:54.230 --> 00:05:57.110
+or called an intrinsic lock
+
+00:05:57.110 --> 00:06:00.410
+and we'll also see this reference to as a monitor.
+
+00:06:01.100 --> 00:06:04.700
+So we can synchronize a block of statements that work with an object
+
+00:06:04.700 --> 00:06:08.380
+by forcing threads to acquire the object's lock
+
+00:06:08.380 --> 00:06:10.980
+before they execute the statement block.
+
+00:06:11.480 --> 00:06:14.180
+Now only one thread can hold the lock at a time,
+
+00:06:14.180 --> 00:06:17.480
+so other threads that want the lock will be suspended
+
+00:06:17.480 --> 00:06:19.480
+until the running thread releases it.
+
+00:06:19.480 --> 00:06:23.780
+Then one and only one of the waiting threads can get the lock
+
+00:06:23.780 --> 00:06:25.080
+and continue executing.
+
+00:06:25.770 --> 00:06:28.770
+So looking at our code in the doCountdown method,
+
+00:06:28.770 --> 00:06:31.970
+the only code we really have to synchronize is the for loop.
+
+00:06:32.470 --> 00:06:35.470
+Thread interference doesn't affect the rest of the code
+
+00:06:35.470 --> 00:06:38.070
+since we're setting a color based on the thread name.
+
+00:06:38.570 --> 00:06:42.720
+So what object will we use to synchronize the for loop?
+
+00:06:42.720 --> 00:06:44.970
+We can't use the counter variable i
+
+00:06:44.970 --> 00:06:49.070
+because it's a primitive type, not an object and primitive types
+
+00:06:49.070 --> 00:06:50.570
+don't have intrinsic locks.
+
+00:06:51.570 --> 00:06:54.230
+So at first glance, the first thought
+
+00:06:54.730 --> 00:06:57.730
+might be to use the color object to synchronize the for loop.
+
+00:06:58.280 --> 00:07:00.280
+So let's try that and see what happens.
+
+00:07:00.780 --> 00:07:05.140
+So to synchronize a set of statements, we just put them inside a synchronized block.
+
+00:07:06.040 --> 00:07:09.730
+So let's look at doing that, so I'm going to add some code here to line 36.
+
+00:07:11.230 --> 00:07:15.030
+I'm going to type synchronized and we're going to use
+
+00:07:15.720 --> 00:07:16.320
+color.
+
+00:07:18.520 --> 00:07:22.880
+And then, we're just going to put the for loop within that synchronized block.
+
+00:07:26.680 --> 00:07:28.480
+So let's run that and see what happens.
+
+00:07:30.580 --> 00:07:33.140
+And what we'll do is we'll remove the synchronized
+
+00:07:33.140 --> 00:07:37.700
+keyword from our method now because we no longer want to synchronize the entire method,
+
+00:07:37.700 --> 00:07:41.600
+we're now doing the alternative approach to just synchronizing a block of code,
+
+00:07:41.600 --> 00:07:43.200
+so remove that and run that.
+
+00:07:45.500 --> 00:07:49.100
+And you can see we've got a different result and clearly there's now some interference again.
+
+00:07:49.700 --> 00:07:53.900
+So why is this happening? Because you know, only one thread can hold the color object
+
+00:07:53.900 --> 00:07:58.300
+lock at a time, so only one thread should be able to execute the for statement.
+
+00:07:58.800 --> 00:08:01.900
+Now that's in the synchronized block on line 36,
+
+00:08:02.800 --> 00:08:05.700
+the other thread should have to wait until the first thread
+
+00:08:05.700 --> 00:08:07.390
+has finished its countdown,
+
+00:08:07.390 --> 00:08:10.750
+but as you can clearly see by me running this example,
+
+00:08:10.750 --> 00:08:14.950
+we're seeing the same type of results we got when we weren't synchronizing at all.
+
+00:08:15.640 --> 00:08:19.000
+The problem here is that we're using a local variable to synchronize
+
+00:08:19.500 --> 00:08:22.860
+and you recall that local variables are stored
+
+00:08:22.860 --> 00:08:24.460
+in the thread stack.
+
+00:08:24.820 --> 00:08:29.180
+Each thread will create its own copy of the local variable
+
+00:08:29.180 --> 00:08:32.680
+and each copy is an object that has its own lock.
+
+00:08:32.680 --> 00:08:35.180
+Thread 1 gets the lock for its copy
+
+00:08:35.180 --> 00:08:38.180
+and continues executing and thread 2
+
+00:08:38.180 --> 00:08:41.480
+gets the lock for its copy and it continues executing.
+
+00:08:42.140 --> 00:08:44.500
+When we want to synchronize using an object,
+
+00:08:44.500 --> 00:08:47.650
+we have to use an object that the threads will share
+
+00:08:47.650 --> 00:08:50.250
+so that they're both competing for the same lock.
+
+00:08:50.800 --> 00:08:53.800
+Using local variables, as a result, won't work.
+
+00:08:53.800 --> 00:08:56.900
+The only exception to this is using a string variable
+
+00:08:56.900 --> 00:09:00.900
+and the reason for that is string objects are reused within the JVM.
+
+00:09:00.900 --> 00:09:03.900
+So in other words, the JVM uses string pools for
+
+00:09:03.900 --> 00:09:05.900
+allocation of string objects.
+
+00:09:06.400 --> 00:09:08.760
+I'm only mentioning this now because you may see
+
+00:09:08.760 --> 00:09:11.010
+examples of a local string variable
+
+00:09:11.010 --> 00:09:13.700
+being used to synchronize code and you'll be wondering why
+
+00:09:13.700 --> 00:09:16.600
+that works and the synchronized code we've got here
+
+00:09:16.600 --> 00:09:18.960
+using the color local variable doesn't work.
+
+00:09:18.960 --> 00:09:20.960
+So that's really the only exception to the rule.
+
+00:09:21.650 --> 00:09:25.910
+As a general rule, it's easy to just remember not to use local variables
+
+00:09:25.910 --> 00:09:27.410
+to synchronize full stop.
+
+00:09:28.210 --> 00:09:30.570
+Now before we fix our example,
+
+00:09:30.570 --> 00:09:35.370
+I really should reiterate that when using a local object variable,
+
+00:09:35.370 --> 00:09:38.970
+the object reference is stored in the thread stack,
+
+00:09:39.370 --> 00:09:42.370
+but the object values are stored on the heap.
+
+00:09:42.970 --> 00:09:47.330
+Now since the threads will each create their own copy of the object,
+
+00:09:47.330 --> 00:09:50.210
+so the object references will then be different,
+
+00:09:50.210 --> 00:09:54.510
+there won't be any interference even though the object values are in the heap.
+
+00:09:54.810 --> 00:09:58.310
+Essentially, the thread stack will only ever
+
+00:09:58.310 --> 00:10:01.640
+contain primitive values and object references
+
+00:10:02.140 --> 00:10:06.140
+and to be fair, function references but that's really outside the scope of this lecture
+
+00:10:06.140 --> 00:10:08.040
+and not related to race conditions.
+
+00:10:08.540 --> 00:10:12.540
+So let's fix our example. So we've worked out that color doesn't work here because it's
+
+00:10:12.540 --> 00:10:13.840
+a local variable.
+
+00:10:14.340 --> 00:10:17.900
+So it would actually make sense to synchronize using the countdown object
+
+00:10:17.900 --> 00:10:19.200
+that the threads share.
+
+00:10:19.750 --> 00:10:22.250
+So we can do this by synchronizing on this.
+
+00:10:22.750 --> 00:10:27.050
+So let's try it by removing the reference to color and changing that to this.
+
+00:10:29.050 --> 00:10:30.050
+Let me try running it.
+
+00:10:32.850 --> 00:10:35.400
+And just run it a few times and as you can see that
+
+00:10:35.400 --> 00:10:36.400
+at this point,
+
+00:10:36.400 --> 00:10:39.390
+the threads no longer interleave or skip numbers.
+
+00:10:39.890 --> 00:10:42.690
+Only one thread can run the for loop at a time
+
+00:10:43.190 --> 00:10:45.890
+and you can also synchronize static methods
+
+00:10:46.390 --> 00:10:48.750
+and you can also use static objects.
+
+00:10:48.750 --> 00:10:53.010
+When you do that, the lock that's used is owned by the class object
+
+00:10:53.010 --> 00:10:55.210
+associated with the object's class.
+
+00:10:56.090 --> 00:10:58.090
+So I'm going to finish the video here.
+
+00:10:58.290 --> 00:11:01.650
+In the next video, we'll continue our discussion about synchronization.
+
+00:11:01.650 --> 00:11:05.010
+We'll go into a bit more detail about that.
+See you in the next video.
